@@ -78,6 +78,8 @@ CFLAGS += -I../../ta/storage_benchmark/include
 CFLAGS += -I../../ta/concurrent/include
 CFLAGS += -I../../ta/concurrent_large/include
 CFLAGS += -I../../ta/sha_perf/include
+CFLAGS += -I../../ta/ocram/ta/include
+CFLAGS += -I../../ta/ocram/ta-failure-ocram-memory/include
 ifdef CFG_GP_PACKAGE_PATH
 CFLAGS += -I../../ta/GP_TTA_Arithmetical
 CFLAGS += -I../../ta/GP_TTA_Crypto

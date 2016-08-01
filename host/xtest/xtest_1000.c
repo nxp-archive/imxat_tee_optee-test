@@ -32,6 +32,8 @@
 #include <ta_rpc_test.h>
 #include <ta_sims_test.h>
 #include <ta_concurrent.h>
+#include <ta_ocram.h>
+#include <failure-ocram-memory-ta.h>
 
 static void xtest_tee_test_1001(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1004(ADBG_Case_t *Case_p);
@@ -44,6 +46,7 @@ static void xtest_tee_test_1010(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1011(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1012(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1013(ADBG_Case_t *Case_p);
+static void xtest_tee_test_1014(ADBG_Case_t *Case_p);
 
 ADBG_CASE_DEFINE(XTEST_TEE_1001, xtest_tee_test_1001,
 		/* Title */
@@ -158,6 +161,17 @@ ADBG_CASE_DEFINE(XTEST_TEE_1012, xtest_tee_test_1012,
 ADBG_CASE_DEFINE(XTEST_TEE_1013, xtest_tee_test_1013,
 		/* Title */
 		"Test concurency with concurrent TA",
+		/* Short description */
+		"Short description ...",
+		/* Requirement IDs */
+		"TEE-??",
+		/* How to implement */
+		"Description of how to implement ..."
+		 );
+
+ADBG_CASE_DEFINE(XTEST_TEE_1014, xtest_tee_test_1014,
+		/* Title */
+		"Test Basic OCRAM features",
 		/* Short description */
 		"Short description ...",
 		/* Requirement IDs */
@@ -1197,4 +1211,95 @@ static void xtest_tee_test_1013(ADBG_Case_t *c)
 	Do_ADBG_Log("    Number of parallel threads: %d", NUM_THREADS);
 	Do_ADBG_Log("    Mean concurrency: %g", mean_concurrency);
 	Do_ADBG_EndSubCase(c, "Using large concurrency TA");
+}
+
+static int call_tee_ocram(int test_no, TEEC_Session sess)
+{
+	TEEC_Result res;
+	TEEC_Operation op;
+	uint32_t err_origin;
+
+	switch(test_no){
+	case 0:
+		memset(&op, 0, sizeof(op));
+		op.paramTypes = TEEC_PARAM_TYPES(TEEC_NONE, TEEC_NONE, TEEC_NONE, TEEC_NONE);
+		res = TEEC_InvokeCommand(&sess, TA_CMD_TEST_OCRAM_MEMORY_ALLOC, &op, &err_origin);
+		if (res != TEEC_SUCCESS){
+			goto EXIT;
+		}
+		break;
+	case 1:
+		memset(&op, 0, sizeof(op));
+		op.paramTypes = TEEC_PARAM_TYPES(TEEC_NONE, TEEC_NONE, TEEC_NONE, TEEC_NONE);
+		res = TEEC_InvokeCommand(&sess, TA_CMD_TEST_OCRAM_MEMORY_REALLOC, &op, &err_origin);
+		if (res != TEEC_SUCCESS){
+			goto EXIT;
+		}
+		break;
+	case 2:
+		memset(&op, 0, sizeof(op));
+		op.paramTypes = TEEC_PARAM_TYPES(TEEC_NONE, TEEC_NONE, TEEC_NONE, TEEC_NONE);
+		res = TEEC_InvokeCommand(&sess, TA_CMD_TEST_OCRAM_MEMORY_ACCESS_RIGHTS, &op, &err_origin);
+		if (res != TEEC_SUCCESS){
+			goto EXIT;
+		}
+		break;
+	case 3:
+		memset(&op, 0, sizeof(op));
+		op.paramTypes = TEEC_PARAM_TYPES(TEEC_NONE, TEEC_NONE, TEEC_NONE, TEEC_NONE);
+		res = TEEC_InvokeCommand(&sess, TA_CMD_TEST_OCRAM_AND_DDR_MEMORY, &op, &err_origin);
+		if (res != TEEC_SUCCESS){
+			goto EXIT;
+		}
+		break;
+	case 4:
+		memset(&op, 0, sizeof(op));
+		op.paramTypes = TEEC_PARAM_TYPES(TEEC_NONE, TEEC_NONE, TEEC_NONE, TEEC_NONE);
+		res = TEEC_InvokeCommand(&sess, TA_CMD_TEST_OUT_OF_MEMORY_TA, &op, &err_origin);
+		if (res != TEEC_SUCCESS){
+			goto EXIT;
+		}
+		break;
+	case 5:
+		memset(&op, 0, sizeof(op));
+		op.paramTypes = TEEC_PARAM_TYPES(TEEC_NONE, TEEC_NONE, TEEC_NONE, TEEC_NONE);
+		res = TEEC_InvokeCommand(&sess, TA_CMD_TEST_OUT_OF_MEMORY_IN_OPTEE, &op, &err_origin);
+		if (res != TEEC_SUCCESS){
+			goto EXIT;
+		}
+		break;
+	default:
+		printf("CA: WRONG TEST:.......\n");
+		break;
+	}
+
+
+EXIT:
+	return res;
+}
+static void xtest_tee_test_1014(ADBG_Case_t *c)
+{
+	TEEC_Session session = { 0 };
+	uint32_t ret_orig;
+
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c,
+		xtest_teec_open_session(&session, &ocram_test_ta_uuid, NULL,
+					&ret_orig)))
+		return;
+
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_ocram(0, session)))
+		goto EXIT;
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_ocram(1, session)))
+		goto EXIT;
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_ocram(2, session)))
+		goto EXIT;
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_ocram(3, session)))
+		goto EXIT;
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_ocram(4, session)))
+		goto EXIT;
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_ocram(5, session)))
+		goto EXIT;
+
+EXIT:
+	TEEC_CloseSession(&session);
 }
