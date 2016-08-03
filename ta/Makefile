@@ -23,7 +23,8 @@ TA_DIRS := create_fail_test \
 	   aes_perf \
 	   ocram/ta \
 	   ocram/ta-failure-ocram-memory \
-	   time_api/ta
+	   time_api/ta \
+	   ocotp/ta
 
 ifdef CFG_GP_PACKAGE_PATH
 TA_DIRS += GP_TTA_Arithmetical \

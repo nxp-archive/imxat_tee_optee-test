@@ -32,6 +32,7 @@
 #include <ta_ocram.h>
 #include <failure-ocram-memory-ta.h>
 #include <ta_time.h>
+#include <ta_ocotp.h>
 
 static void xtest_tee_test_1001(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1004(ADBG_Case_t *Case_p);
@@ -46,6 +47,7 @@ static void xtest_tee_test_1012(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1013(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1014(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1015(ADBG_Case_t *Case_p);
+static void xtest_tee_test_1016(ADBG_Case_t *Case_p);
 
 ADBG_CASE_DEFINE(XTEST_TEE_1001, xtest_tee_test_1001, "Core self tests");
 ADBG_CASE_DEFINE(XTEST_TEE_1004, xtest_tee_test_1004, "Test User Crypt TA");
@@ -67,6 +69,8 @@ ADBG_CASE_DEFINE(XTEST_TEE_1014, xtest_tee_test_1014,
 		"Test Basic OCRAM features");
 ADBG_CASE_DEFINE(XTEST_TEE_1015, xtest_tee_test_1015,
 		"Test Extension of Time API features");
+ADBG_CASE_DEFINE(XTEST_TEE_1016, xtest_tee_test_1016,
+		"Test Basic OCOTP features");
 
 struct xtest_crypto_session {
 	ADBG_Case_t *c;
@@ -1150,6 +1154,7 @@ static void xtest_tee_test_1014(ADBG_Case_t *c)
 EXIT:
 	TEEC_CloseSession(&session);
 }
+
 static int call_tee_snvs(TEEC_Session sess)
 {
 	TEEC_Result res;
@@ -1200,6 +1205,7 @@ static int call_tee_snvs(TEEC_Session sess)
 EXIT:
 	return res;
 }
+
 static void xtest_tee_test_1015(ADBG_Case_t *c)
 {
 	TEEC_Session session = { 0 };
@@ -1215,3 +1221,100 @@ static void xtest_tee_test_1015(ADBG_Case_t *c)
 EXIT:
 	TEEC_CloseSession(&session);
 }
+
+static int call_tee_ocotp(TEEC_Session sess, uint32_t operation_flag, uint32_t bank, uint32_t word, uint32_t value)
+{
+	TEEC_Result res;
+	TEEC_Operation op1 = TEEC_OPERATION_INITIALIZER;
+	uint32_t err_origin;
+
+	/*
+	 * Prepare the argument. Pass a value in the first parameter,
+	 * the remaining three parameters are unused.
+	 */
+	if (operation_flag == TEE_SHADOW_READ) {
+		op1.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INPUT, TEEC_VALUE_INPUT, TEEC_VALUE_INPUT, TEEC_VALUE_OUTPUT);
+		op1.params[0].value.a = TEE_SHADOW_CACHE;
+		op1.params[1].value.a = bank;
+		op1.params[2].value.a = word;
+		res = TEEC_InvokeCommand(&sess, TA_OCOTP_CMD_GET_FUSE, &op1, &err_origin);
+
+		if (res != TEEC_SUCCESS)
+			goto exit;
+
+		printf("\n =============== Get shadow bank  =  %d fuse word = %d and value = %x\n",
+				op1.params[1].value.a, op1.params[2].value.a,op1.params[3].value.a);
+
+	} else if (operation_flag == TEE_FUSE_BOX_SENSE) {
+		op1.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INPUT, TEEC_VALUE_INPUT, TEEC_VALUE_INPUT, TEEC_VALUE_OUTPUT);
+		op1.params[0].value.a = TEE_FUSE_BOX;
+		op1.params[1].value.a = bank;
+		op1.params[2].value.a = word;
+		res = TEEC_InvokeCommand(&sess, TA_OCOTP_CMD_GET_FUSE, &op1, &err_origin);
+
+		if (res != TEEC_SUCCESS)
+			goto exit;
+
+		printf("\n =============== Get fuse bank  =  %d fuse word = %d and value = %x\n",
+				op1.params[1].value.a, op1.params[2].value.a,op1.params[3].value.a);
+
+	} else if (operation_flag == TEE_SHADOW_OVERRIDE) {
+		op1.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INPUT, TEEC_VALUE_INPUT,
+				TEEC_VALUE_INPUT, TEEC_VALUE_INPUT);
+		op1.params[0].value.a = TEE_SHADOW_CACHE;
+		op1.params[1].value.a = bank;
+		op1.params[2].value.a = word;
+		op1.params[3].value.a = value;
+		res = TEEC_InvokeCommand(&sess, TA_OCOTP_CMD_SET_FUSE, &op1, &err_origin);
+
+		if (res != TEEC_SUCCESS)
+			goto exit;
+
+		printf("\n =============== Set shadow cache bank  =  %d fuse word = %d with value = %x\n",
+				op1.params[1].value.a, op1.params[2].value.a,op1.params[3].value.a);
+
+	} else if (operation_flag == TEE_FUSE_BOX_PROG) {
+			op1.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INPUT, TEEC_VALUE_INPUT,
+					TEEC_VALUE_INPUT, TEEC_VALUE_INPUT);
+			op1.params[0].value.a = TEE_FUSE_BOX;
+			op1.params[1].value.a = bank;
+			op1.params[2].value.a = word;
+			op1.params[3].value.a = value;
+			res = TEEC_InvokeCommand(&sess, TA_OCOTP_CMD_SET_FUSE, &op1, &err_origin);
+
+			if (res != TEEC_SUCCESS)
+				goto exit;
+
+			printf("\n =============== Set fuse bank  =  %d fuse word = %d with value = %x\n",
+					op1.params[1].value.a, op1.params[2].value.a,op1.params[3].value.a);
+		}
+exit:
+	return res;
+}
+
+static void xtest_tee_test_1016(ADBG_Case_t *c)
+{
+	TEEC_Session session = { 0 };
+	uint32_t ret_orig;
+
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c,
+		xtest_teec_open_session(&session, &ocotp_test_ta_uuid, NULL,
+					&ret_orig)))
+		return;
+
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_ocotp(session, TEE_SHADOW_READ, BANK0, WORD0, 0)))
+		goto EXIT;
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_ocotp(session, TEE_SHADOW_READ, BANK1, WORD0, 0)))
+		goto EXIT;
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_ocotp(session, TEE_SHADOW_READ, BANK3, WORD0, 0)))
+		goto EXIT;
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_ocotp(session, TEE_FUSE_BOX_SENSE, BANK0, WORD0, 0)))
+		goto EXIT;
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_ocotp(session, TEE_FUSE_BOX_SENSE, BANK1, WORD0, 0)))
+		goto EXIT;
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_ocotp(session, TEE_FUSE_BOX_SENSE, BANK3, WORD0, 0)))
+		goto EXIT;
+EXIT:
+	TEEC_CloseSession(&session);
+}
+
