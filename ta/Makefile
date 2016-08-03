@@ -21,7 +21,8 @@ TA_DIRS := create_fail_test \
 	   storage_benchmark \
 	   sha_perf \
 	   ocram/ta \
-	   ocram/ta-failure-ocram-memory
+	   ocram/ta-failure-ocram-memory \
+	   time_api/ta
 
 ifdef CFG_GP_PACKAGE_PATH
 TA_DIRS += GP_TTA_Arithmetical \

@@ -34,6 +34,7 @@
 #include <ta_concurrent.h>
 #include <ta_ocram.h>
 #include <failure-ocram-memory-ta.h>
+#include <ta_time.h>
 
 static void xtest_tee_test_1001(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1004(ADBG_Case_t *Case_p);
@@ -47,6 +48,7 @@ static void xtest_tee_test_1011(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1012(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1013(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1014(ADBG_Case_t *Case_p);
+static void xtest_tee_test_1015(ADBG_Case_t *Case_p);
 
 ADBG_CASE_DEFINE(XTEST_TEE_1001, xtest_tee_test_1001,
 		/* Title */
@@ -172,6 +174,16 @@ ADBG_CASE_DEFINE(XTEST_TEE_1013, xtest_tee_test_1013,
 ADBG_CASE_DEFINE(XTEST_TEE_1014, xtest_tee_test_1014,
 		/* Title */
 		"Test Basic OCRAM features",
+		/* Short description */
+		"Short description ...",
+		/* Requirement IDs */
+		"TEE-??",
+		/* How to implement */
+		"Description of how to implement ..."
+		 );
+ADBG_CASE_DEFINE(XTEST_TEE_1015, xtest_tee_test_1015,
+		/* Title */
+		"Test Extension of Time API features",
 		/* Short description */
 		"Short description ...",
 		/* Requirement IDs */
@@ -1300,6 +1312,71 @@ static void xtest_tee_test_1014(ADBG_Case_t *c)
 	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_ocram(5, session)))
 		goto EXIT;
 
+EXIT:
+	TEEC_CloseSession(&session);
+}
+static int call_tee_snvs(TEEC_Session sess)
+{
+	TEEC_Result res;
+	TEEC_Operation op = TEEC_OPERATION_INITIALIZER;
+	TEEC_Operation op1 = TEEC_OPERATION_INITIALIZER;
+	uint32_t err_origin;
+	uint32_t wait_time_in_s;
+
+	op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_OUTPUT, TEEC_NONE,
+					 TEEC_NONE, TEEC_NONE);
+
+	res = TEEC_InvokeCommand(&sess, TA_TIME_CMD_GET_EXTENSION_PROPERTY, &op,
+				 &err_origin);
+	if (res != TEEC_SUCCESS)
+		goto EXIT;
+	if(op.params[0].value.a){
+		op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INOUT, TEEC_NONE,
+						 TEEC_NONE, TEEC_NONE);
+		res = TEEC_InvokeCommand(&sess, TA_TIME_CMD_GET_SYSTEM_TIME, &op,
+					 &err_origin);
+		if (res != TEEC_SUCCESS)
+			goto EXIT;
+		wait_time_in_s = 5;
+		printf("\n =============== TA TEE set alarm of %ds from NOW\n", wait_time_in_s);
+		op1.params[0].value.a = op.params[0].value.a + wait_time_in_s;
+		op1.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INPUT, TEEC_NONE,
+								 TEEC_NONE, TEEC_NONE);
+		res = TEEC_InvokeCommand(&sess, TA_TIME_CMD_SET_ALARM_TIME, &op1,
+					 &err_origin);
+		if (res != TEEC_SUCCESS)
+			goto EXIT;
+		op1.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_OUTPUT, TEEC_NONE,
+						 TEEC_NONE, TEEC_NONE);
+		res = TEEC_InvokeCommand(&sess, TA_TIME_CMD_GET_ALARM_TIME, &op1,
+					 &err_origin);
+		if (res != TEEC_SUCCESS)
+			goto EXIT;
+		printf("\n =============== TA TEE alarm time:  %d.%03d\n", op1.params[0].value.a, op1.params[0].value.b);
+		printf("\n =============== TEE Wait %ds\n",(wait_time_in_s + 1));
+		op1.params[0].value.a = (wait_time_in_s + 1) * 1000;
+		op1.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INPUT, TEEC_NONE,
+								 TEEC_NONE, TEEC_NONE);
+		res = TEEC_InvokeCommand(&sess, TA_TIME_CMD_GET_TEE_TIMEOUT, &op1,
+					 &err_origin);
+		if (res != TEEC_SUCCESS)
+			goto EXIT;
+	}
+EXIT:
+	return res;
+}
+static void xtest_tee_test_1015(ADBG_Case_t *c)
+{
+	TEEC_Session session = { 0 };
+	uint32_t ret_orig;
+
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c,
+		xtest_teec_open_session(&session, &snvs_test_ta_uuid, NULL,
+					&ret_orig)))
+		return;
+
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_snvs(session)))
+		goto EXIT;
 EXIT:
 	TEEC_CloseSession(&session);
 }
