@@ -25,6 +25,7 @@
 #include <ta_storage_benchmark.h>
 #include <ta_ocram.h>
 #include <ta_time.h>
+#include <ta_ocotp.h>
 #include <tee_api_defines.h>
 #ifdef WITH_GP_TESTS
 #include <tee_api_types.h>
@@ -95,6 +96,7 @@ const TEEC_UUID concurrent_large_ta_uuid = TA_CONCURRENT_LARGE_UUID;
 const TEEC_UUID storage_benchmark_ta_uuid = TA_STORAGE_BENCHMARK_UUID;
 const TEEC_UUID ocram_test_ta_uuid = TA_TEST_OCRAM_UUID;
 const TEEC_UUID snvs_test_ta_uuid = TA_TIME_UUID;
+const TEEC_UUID ocotp_test_ta_uuid = TA_OCOTP_UUID;
 #ifdef WITH_GP_TESTS
 const TEEC_UUID gp_tta_ds_uuid = TA_TTA_DS_UUID;
 #endif
