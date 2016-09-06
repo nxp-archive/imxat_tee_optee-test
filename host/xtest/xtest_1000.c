@@ -48,9 +48,13 @@ static void xtest_tee_test_1010(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1011(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1012(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1013(ADBG_Case_t *Case_p);
+#ifdef CFG_IMX_OCRAM
 static void xtest_tee_test_1014(ADBG_Case_t *Case_p);
+#endif
 static void xtest_tee_test_1015(ADBG_Case_t *Case_p);
+#ifdef CFG_IMX_OCOTP
 static void xtest_tee_test_1016(ADBG_Case_t *Case_p);
+#endif
 
 ADBG_CASE_DEFINE(XTEST_TEE_1001, xtest_tee_test_1001,
 		/* Title */
@@ -172,7 +176,7 @@ ADBG_CASE_DEFINE(XTEST_TEE_1013, xtest_tee_test_1013,
 		/* How to implement */
 		"Description of how to implement ..."
 		 );
-
+#ifdef CFG_IMX_OCRAM
 ADBG_CASE_DEFINE(XTEST_TEE_1014, xtest_tee_test_1014,
 		/* Title */
 		"Test Basic OCRAM features",
@@ -183,7 +187,7 @@ ADBG_CASE_DEFINE(XTEST_TEE_1014, xtest_tee_test_1014,
 		/* How to implement */
 		"Description of how to implement ..."
 		 );
-
+#endif
 ADBG_CASE_DEFINE(XTEST_TEE_1015, xtest_tee_test_1015,
 		/* Title */
 		"Test Extension of Time API features",
@@ -194,7 +198,7 @@ ADBG_CASE_DEFINE(XTEST_TEE_1015, xtest_tee_test_1015,
 		/* How to implement */
 		"Description of how to implement ..."
 		 );
-
+#ifdef CFG_IMX_OCOTP
 ADBG_CASE_DEFINE(XTEST_TEE_1016, xtest_tee_test_1016,
 		/* Title */
 		"Test Basic OCOTP features",
@@ -205,7 +209,7 @@ ADBG_CASE_DEFINE(XTEST_TEE_1016, xtest_tee_test_1016,
 		/* How to implement */
 		"Description of how to implement ..."
 		 );
-
+#endif
 struct xtest_crypto_session {
 	ADBG_Case_t *c;
 	TEEC_Session *session;
@@ -1239,6 +1243,7 @@ static void xtest_tee_test_1013(ADBG_Case_t *c)
 	Do_ADBG_EndSubCase(c, "Using large concurrency TA");
 }
 
+#ifdef CFG_IMX_OCRAM
 static int call_tee_ocram(int test_no, TEEC_Session sess)
 {
 	TEEC_Result res;
@@ -1303,6 +1308,8 @@ static int call_tee_ocram(int test_no, TEEC_Session sess)
 EXIT:
 	return res;
 }
+
+
 static void xtest_tee_test_1014(ADBG_Case_t *c)
 {
 	TEEC_Session session = { 0 };
@@ -1329,6 +1336,7 @@ static void xtest_tee_test_1014(ADBG_Case_t *c)
 EXIT:
 	TEEC_CloseSession(&session);
 }
+#endif
 
 static int call_tee_snvs(TEEC_Session sess)
 {
@@ -1397,6 +1405,7 @@ EXIT:
 	TEEC_CloseSession(&session);
 }
 
+#ifdef CFG_IMX_OCOTP
 static int call_tee_ocotp(TEEC_Session sess, uint32_t operation_flag, uint32_t bank, uint32_t word, uint32_t value)
 {
 	TEEC_Result res;
@@ -1492,4 +1501,4 @@ static void xtest_tee_test_1016(ADBG_Case_t *c)
 EXIT:
 	TEEC_CloseSession(&session);
 }
-
+#endif
