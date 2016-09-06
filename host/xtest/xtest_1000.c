@@ -45,9 +45,13 @@ static void xtest_tee_test_1010(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1011(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1012(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1013(ADBG_Case_t *Case_p);
+#ifdef CFG_IMX_OCRAM
 static void xtest_tee_test_1014(ADBG_Case_t *Case_p);
+#endif
 static void xtest_tee_test_1015(ADBG_Case_t *Case_p);
+#ifdef CFG_IMX_OCOTP
 static void xtest_tee_test_1016(ADBG_Case_t *Case_p);
+#endif
 
 ADBG_CASE_DEFINE(XTEST_TEE_1001, xtest_tee_test_1001, "Core self tests");
 ADBG_CASE_DEFINE(XTEST_TEE_1004, xtest_tee_test_1004, "Test User Crypt TA");
@@ -64,13 +68,16 @@ ADBG_CASE_DEFINE(XTEST_TEE_1012, xtest_tee_test_1012,
 		"Test Single Instance Multi Session features with SIMS TA");
 ADBG_CASE_DEFINE(XTEST_TEE_1013, xtest_tee_test_1013,
 		"Test concurency with concurrent TA");
-
+#ifdef CFG_IMX_OCRAM
 ADBG_CASE_DEFINE(XTEST_TEE_1014, xtest_tee_test_1014,
 		"Test Basic OCRAM features");
+#endif
 ADBG_CASE_DEFINE(XTEST_TEE_1015, xtest_tee_test_1015,
 		"Test Extension of Time API features");
+#ifdef CFG_IMX_OCOTP
 ADBG_CASE_DEFINE(XTEST_TEE_1016, xtest_tee_test_1016,
 		"Test Basic OCOTP features");
+#endif
 
 struct xtest_crypto_session {
 	ADBG_Case_t *c;
@@ -1064,6 +1071,7 @@ static void xtest_tee_test_1013(ADBG_Case_t *c)
 #endif
 }
 
+#ifdef CFG_IMX_OCRAM
 static int call_tee_ocram(int test_no, TEEC_Session sess)
 {
 	TEEC_Result res;
@@ -1128,6 +1136,8 @@ static int call_tee_ocram(int test_no, TEEC_Session sess)
 EXIT:
 	return res;
 }
+
+
 static void xtest_tee_test_1014(ADBG_Case_t *c)
 {
 	TEEC_Session session = { 0 };
@@ -1154,6 +1164,7 @@ static void xtest_tee_test_1014(ADBG_Case_t *c)
 EXIT:
 	TEEC_CloseSession(&session);
 }
+#endif
 
 static int call_tee_snvs(TEEC_Session sess)
 {
@@ -1222,6 +1233,7 @@ EXIT:
 	TEEC_CloseSession(&session);
 }
 
+#ifdef CFG_IMX_OCOTP
 static int call_tee_ocotp(TEEC_Session sess, uint32_t operation_flag, uint32_t bank, uint32_t word, uint32_t value)
 {
 	TEEC_Result res;
@@ -1317,4 +1329,4 @@ static void xtest_tee_test_1016(ADBG_Case_t *c)
 EXIT:
 	TEEC_CloseSession(&session);
 }
-
+#endif
