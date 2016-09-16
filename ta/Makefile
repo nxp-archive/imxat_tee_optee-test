@@ -20,11 +20,13 @@ TA_DIRS := create_fail_test \
 	   concurrent_large \
 	   storage_benchmark \
 	   sha_perf \
+	   aes_perf \
 	   ocram/ta \
 	   ocram/ta-failure-ocram-memory \
 	   time_api/ta \
 	   ocotp/ta \
 	   ta_mc_test/ta
+
 
 ifdef CFG_GP_PACKAGE_PATH
 TA_DIRS += GP_TTA_Arithmetical \
