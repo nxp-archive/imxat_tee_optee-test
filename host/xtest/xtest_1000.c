@@ -663,6 +663,12 @@ static void xtest_tee_test_1008(ADBG_Case_t *c)
 		load_corrupt_ta(c, sizeof(struct shdr), 1)); /* hash */
 	ADBG_EXPECT_TRUE(c,
 		load_corrupt_ta(c, sizeof(struct shdr) + 32, 1)); /* sig */
+#ifdef CFG_IMX_SRK
+	ADBG_EXPECT_TRUE(c,
+		load_corrupt_ta(c, offsetof(struct shdr, dercert_size), 1));
+	ADBG_EXPECT_TRUE(c,
+		load_corrupt_ta(c, sizeof(struct shdr) + 32 + 32, 1)); /* dercert */
+#endif
 	ADBG_EXPECT_TRUE(c, load_corrupt_ta(c, 3000, 1)); /* payload */
 	ADBG_EXPECT_TRUE(c, load_corrupt_ta(c, 30000, 1)); /* payload */
 	Do_ADBG_EndSubCase(c, "Load corrupt TA");
