@@ -41,6 +41,11 @@
 #include <stdlib.h>
 #endif
 
+#ifdef CFG_CAAM_SM
+#include <ta_caam_sm.h>
+#include <failure-caam-smemory-ta.h>
+#endif
+
 static void xtest_tee_test_1001(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1004(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1005(ADBG_Case_t *Case_p);
@@ -58,6 +63,9 @@ static void xtest_tee_test_1014(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1015(ADBG_Case_t *Case_p);
 #ifdef CFG_IMX_OCOTP
 static void xtest_tee_test_1016(ADBG_Case_t *Case_p);
+#endif
+#ifdef CFG_CAAM_SM
+static void xtest_tee_test_1017(ADBG_Case_t *Case_p);
 #endif
 #ifdef CFG_IMX_CA_SRK
 static void xtest_tee_test_1018(ADBG_Case_t *Case_p);
@@ -90,6 +98,10 @@ ADBG_CASE_DEFINE(XTEST_TEE_1015, xtest_tee_test_1015,
 #ifdef CFG_IMX_OCOTP
 ADBG_CASE_DEFINE(XTEST_TEE_1016, xtest_tee_test_1016,
 		"Test Basic OCOTP features");
+#endif
+#ifdef CFG_CAAM_SM
+ADBG_CASE_DEFINE(XTEST_TEE_1017, xtest_tee_test_1017,
+		"Test Basic CAAM SM features");
 #endif
 #ifdef CFG_IMX_CA_SRK
 ADBG_CASE_DEFINE(XTEST_TEE_1018, xtest_tee_test_1018,
@@ -1353,6 +1365,118 @@ static void xtest_tee_test_1016(ADBG_Case_t *c)
 		goto EXIT;
 	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_ocotp(session, TEE_FUSE_BOX_SENSE, BANK3, WORD0, 0)))
 		goto EXIT;
+EXIT:
+	TEEC_CloseSession(&session);
+}
+#endif
+
+#ifdef CFG_CAAM_SM
+static int call_tee_caam_sm(int test_no, TEEC_Session sess)
+{
+	TEEC_Result res;
+	TEEC_Operation op;
+	uint32_t err_origin;
+
+	switch (test_no) {
+	case 0:
+		memset(&op, 0, sizeof(op));
+		op.paramTypes = TEEC_PARAM_TYPES(
+							TEEC_NONE, TEEC_NONE,
+							TEEC_NONE, TEEC_NONE);
+		res = TEEC_InvokeCommand(&sess,
+				TA_CMD_TEST_CAAM_SM_MEMORY_ALLOC,
+				&op, &err_origin);
+		if (res != TEEC_SUCCESS)
+			goto EXIT;
+		break;
+	case 1:
+		memset(&op, 0, sizeof(op));
+		op.paramTypes = TEEC_PARAM_TYPES(
+							TEEC_NONE, TEEC_NONE,
+							TEEC_NONE, TEEC_NONE);
+		res = TEEC_InvokeCommand(&sess,
+				TA_CMD_TEST_CAAM_SM_MEMORY_REALLOC,
+				&op, &err_origin);
+		if (res != TEEC_SUCCESS)
+			goto EXIT;
+		break;
+	case 2:
+		memset(&op, 0, sizeof(op));
+		op.paramTypes = TEEC_PARAM_TYPES(
+							TEEC_NONE, TEEC_NONE,
+							TEEC_NONE, TEEC_NONE);
+		res = TEEC_InvokeCommand(&sess,
+				TA_CMD_TEST_CAAM_SM_MEMORY_ACCESS_RIGHTS,
+				&op, &err_origin);
+		if (res != TEEC_SUCCESS)
+			goto EXIT;
+		break;
+	case 3:
+		memset(&op, 0, sizeof(op));
+		op.paramTypes = TEEC_PARAM_TYPES(
+							TEEC_NONE, TEEC_NONE,
+							TEEC_NONE, TEEC_NONE);
+		res = TEEC_InvokeCommand(&sess,
+				TA_CMD_TEST_CAAM_SM_AND_DDR_MEMORY,
+				&op, &err_origin);
+		if (res != TEEC_SUCCESS)
+			goto EXIT;
+		break;
+	case 4:
+		memset(&op, 0, sizeof(op));
+		op.paramTypes = TEEC_PARAM_TYPES(
+							TEEC_NONE, TEEC_NONE,
+							TEEC_NONE, TEEC_NONE);
+		res = TEEC_InvokeCommand(&sess,
+				TA_CMD_TEST_OUT_OF_SMEMORY_TA,
+				&op, &err_origin);
+		if (res != TEEC_SUCCESS)
+			goto EXIT;
+		break;
+	case 5:
+		memset(&op, 0, sizeof(op));
+		op.paramTypes = TEEC_PARAM_TYPES(
+							TEEC_NONE, TEEC_NONE,
+							TEEC_NONE, TEEC_NONE);
+		res = TEEC_InvokeCommand(&sess,
+				TA_CMD_TEST_OUT_OF_SMEMORY_IN_OPTEE,
+				&op, &err_origin);
+		if (res != TEEC_SUCCESS)
+			goto EXIT;
+		break;
+	default:
+		printf("CA: WRONG TEST:.......\n");
+		break;
+	}
+
+
+EXIT:
+	return res;
+}
+
+static void xtest_tee_test_1017(ADBG_Case_t *c)
+{
+	TEEC_Session session = { 0 };
+	uint32_t ret_orig;
+
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c,
+		xtest_teec_open_session(&session, &caam_sm_test_ta_uuid, NULL,
+					&ret_orig)))
+		return;
+
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_caam_sm(0, session)))
+		goto EXIT;
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_caam_sm(1, session)))
+		goto EXIT;
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_caam_sm(2, session)))
+		goto EXIT;
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_caam_sm(3, session)))
+		goto EXIT;
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_caam_sm(4, session)))
+		goto EXIT;
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_caam_sm(5, session)))
+		goto EXIT;
+
 EXIT:
 	TEEC_CloseSession(&session);
 }

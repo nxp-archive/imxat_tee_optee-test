@@ -25,7 +25,9 @@ TA_DIRS := create_fail_test \
 	   ocram/ta-failure-ocram-memory \
 	   time_api/ta \
 	   ocotp/ta \
-	   ta_mc_test/ta
+	   ta_mc_test/ta \
+	   caam_sm/ta \
+	   caam_sm/ta-failure-caam-smemory
 
 ifdef CFG_GP_PACKAGE_PATH
 TA_DIRS += GP_TTA_Arithmetical \
@@ -48,7 +50,7 @@ endif
 all: ta
 
 .PHONY: ta
-ta: 
+ta:
 	$(q)$(foreach dir,$(TA_DIRS), $(MAKE) -C $(dir) O=$(O)/$(dir) &&) true
 
 .PHONY: clean

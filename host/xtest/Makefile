@@ -81,6 +81,10 @@ CFLAGS += -I../../ta/ocram/ta-failure-ocram-memory/include
 CFLAGS += -I../../ta/time_api/ta/include
 CFLAGS += -I../../ta/ocotp/ta/include
 CFLAGS += -I../../ta/ta_mc_test/ta/include
+ifdef CFG_CAAM_SM
+CFLAGS += -I../../ta/caam_sm/ta/include
+CFLAGS += -I../../ta/caam_sm/ta-failure-caam-smemory/include
+endif
 ifdef CFG_GP_PACKAGE_PATH
 CFLAGS += -I../../ta/GP_TTA_Arithmetical
 CFLAGS += -I../../ta/GP_TTA_Crypto

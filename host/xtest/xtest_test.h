@@ -35,6 +35,9 @@ ADBG_CASE_DECLARE(XTEST_TEE_1015);
 #ifdef CFG_IMX_OCOTP
 ADBG_CASE_DECLARE(XTEST_TEE_1016);
 #endif
+#ifdef CFG_CAAM_SM
+ADBG_CASE_DECLARE(XTEST_TEE_1017);
+#endif
 #ifdef CFG_IMX_CA_SRK
 ADBG_CASE_DECLARE(XTEST_TEE_1018);
 #endif
@@ -241,6 +244,7 @@ extern const TEEC_UUID storage_benchmark_ta_uuid;
 extern const TEEC_UUID ocram_test_ta_uuid;
 extern const TEEC_UUID snvs_test_ta_uuid;
 extern const TEEC_UUID ocotp_test_ta_uuid;
+extern const TEEC_UUID caam_sm_test_ta_uuid;
 extern char *_device;
 
 #endif /*XTEST_TEST_H*/
