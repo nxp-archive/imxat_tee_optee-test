@@ -2996,6 +2996,10 @@ static const struct xtest_ac_case xtest_ac_cases[] = {
 			  ac_rsassa_vect2, NULL_ARRAY, WITHOUT_SALT),
 	XTEST_AC_RSA_CASE(0, TEE_ALG_RSA_NOPAD, TEE_MODE_DECRYPT,
 			  ac_rsassa_vect2, NULL_ARRAY, WITHOUT_SALT),
+	XTEST_AC_RSA_CASE(0, TEE_ALG_RSA_NOPAD, TEE_MODE_ENCRYPT,
+			  ac_rsassa_vect18, NULL_ARRAY, WITHOUT_SALT),
+	XTEST_AC_RSA_CASE(0, TEE_ALG_RSA_NOPAD, TEE_MODE_DECRYPT,
+			  ac_rsassa_vect18, NULL_ARRAY, WITHOUT_SALT),
 	XTEST_AC_RSA_CASE(0, TEE_ALG_RSASSA_PKCS1_V1_5_SHA1, TEE_MODE_SIGN,
 			  ac_rsassa_vect3, NULL_ARRAY, WITHOUT_SALT),
 	XTEST_AC_RSA_CASE(0, TEE_ALG_RSASSA_PKCS1_V1_5_SHA1, TEE_MODE_VERIFY,
@@ -3116,6 +3120,10 @@ static const struct xtest_ac_case xtest_ac_cases[] = {
 			  ac_rsassa_vect2, ARRAY, WITHOUT_SALT),
 	XTEST_AC_RSA_CASE(1, TEE_ALG_RSA_NOPAD, TEE_MODE_DECRYPT,
 			  ac_rsassa_vect2, ARRAY, WITHOUT_SALT),
+	XTEST_AC_RSA_CASE(0, TEE_ALG_RSA_NOPAD, TEE_MODE_ENCRYPT,
+			  ac_rsassa_vect18, ARRAY, WITHOUT_SALT),
+	XTEST_AC_RSA_CASE(0, TEE_ALG_RSA_NOPAD, TEE_MODE_DECRYPT,
+			  ac_rsassa_vect18, ARRAY, WITHOUT_SALT),
 	XTEST_AC_RSA_CASE(0, TEE_ALG_RSASSA_PKCS1_V1_5_SHA1, TEE_MODE_SIGN,
 			  ac_rsassa_vect3, ARRAY, WITHOUT_SALT),
 	XTEST_AC_RSA_CASE(0, TEE_ALG_RSASSA_PKCS1_V1_5_SHA1, TEE_MODE_VERIFY,
@@ -3742,6 +3750,9 @@ static bool create_key(ADBG_Case_t *c, TEEC_Session *s,
 {
 	size_t n;
 
+	if (!ADBG_EXPECT_TRUE(c, max_key_size <= MAX_SIZE_RSA_MODULUS*8))
+		return false;
+
 	if (!ADBG_EXPECT_TEEC_SUCCESS(c,
 		ta_crypt_cmd_allocate_transient_object(c, s, key_type,
 			max_key_size, handle)))
@@ -3753,7 +3764,7 @@ static bool create_key(ADBG_Case_t *c, TEEC_Session *s,
 		return false;
 
 	for (n = 0; n < num_attrs; n++) {
-		uint8_t out[384];
+		uint8_t out[MAX_SIZE_RSA_KEY_OBJ];
 		size_t out_size;
 
 		out_size = sizeof(out);
@@ -3792,9 +3803,9 @@ static void xtest_tee_test_4006(ADBG_Case_t *c)
 	TEE_Attribute key_attrs[8];
 	TEE_Attribute algo_params[1];
 	size_t num_algo_params;
-	uint8_t out[512];
+	uint8_t out[MAX_SIZE_RSA_MODULUS];
 	size_t out_size;
-	uint8_t out_enc[512];
+	uint8_t out_enc[MAX_SIZE_RSA_MODULUS];
 	size_t out_enc_size;
 	uint8_t ptx_hash[TEE_MAX_HASH_SIZE];
 	size_t ptx_hash_size;
