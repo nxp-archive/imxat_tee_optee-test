@@ -37,6 +37,10 @@
 #include <ta_time.h>
 #include <ta_ocotp.h>
 
+#ifdef CFG_IMX_CA_SRK
+#include <stdlib.h>
+#endif
+
 static void xtest_tee_test_1001(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1004(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1005(ADBG_Case_t *Case_p);
@@ -54,6 +58,9 @@ static void xtest_tee_test_1014(ADBG_Case_t *Case_p);
 static void xtest_tee_test_1015(ADBG_Case_t *Case_p);
 #ifdef CFG_IMX_OCOTP
 static void xtest_tee_test_1016(ADBG_Case_t *Case_p);
+#endif
+#ifdef CFG_IMX_CA_SRK
+static void xtest_tee_test_1018(ADBG_Case_t *Case_p);
 #endif
 
 ADBG_CASE_DEFINE(XTEST_TEE_1001, xtest_tee_test_1001,
@@ -202,6 +209,18 @@ ADBG_CASE_DEFINE(XTEST_TEE_1015, xtest_tee_test_1015,
 ADBG_CASE_DEFINE(XTEST_TEE_1016, xtest_tee_test_1016,
 		/* Title */
 		"Test Basic OCOTP features",
+		/* Short description */
+		"Short description ...",
+		/* Requirement IDs */
+		"TEE-??",
+		/* How to implement */
+		"Description of how to implement ..."
+		 );
+#endif
+#ifdef CFG_IMX_CA_SRK
+ADBG_CASE_DEFINE(XTEST_TEE_1018, xtest_tee_test_1018,
+		/* Title */
+		"Test Case of CA Auth",
 		/* Short description */
 		"Short description ...",
 		/* Requirement IDs */
@@ -1506,5 +1525,21 @@ static void xtest_tee_test_1016(ADBG_Case_t *c)
 		goto EXIT;
 EXIT:
 	TEEC_CloseSession(&session);
+}
+#endif
+
+#ifdef CFG_IMX_CA_SRK
+static void xtest_tee_test_1018(ADBG_Case_t *c __unused)
+{
+	Do_ADBG_BeginSubCase(c, "Fork Not Signed Sample Hello");
+	{
+		ADBG_EXPECT_NOT(c, TEE_SUCCESS, system("unsigned_hello"));
+	}
+	Do_ADBG_EndSubCase(c, "Fork Not Signed Sample Hello");
+	Do_ADBG_BeginSubCase(c, "Fork Signed Sample Hello With Wrong Key");
+	{
+		ADBG_EXPECT_NOT(c, TEE_SUCCESS, system("WrongCA_Key"));
+	}
+	Do_ADBG_EndSubCase(c, "Fork Signed Sample Hello With Wrong Key");
 }
 #endif
