@@ -23,6 +23,9 @@ CROSS_COMPILE_TA ?= $(CROSS_COMPILE)
 .PHONY: all
 ifneq ($(wildcard $(TA_DEV_KIT_DIR)/host_include/conf.mk),)
 all: xtest ta
+ifeq ($(CFG_IMX_CA_SRK),y)
+all: unsigned_hello
+endif
 else
 all:
 	$(q)echo "TA_DEV_KIT_DIR is not correctly defined" && false
@@ -35,6 +38,21 @@ xtest:
 			     q=$(q) \
 			     O=$(out-dir)/xtest \
 			     $@
+ifeq ($(CFG_IMX_CA_SRK),y)
+	$(TA_DEV_KIT_DIR)/scripts/ca-link.sh $(out-dir)/xtest/$@
+endif
+
+ifeq ($(CFG_IMX_CA_SRK),y)
+.PHONY: unsigned_hello
+unsigned_hello:
+	$(q)$(MAKE) -C host/unsigned_hello CROSS_COMPILE="$(CROSS_COMPILE_HOST)" \
+			     --no-builtin-variables \
+			     q=$(q) \
+			     O=$(out-dir)/unsigned_hello \
+			     $@
+	$(q)mkdir -p $(out-dir)/WrongCA_Key
+	$(q)cp -r host/WrongCA_Key/WrongCA_Key $(out-dir)/WrongCA_Key/WrongCA_Key
+endif
 
 .PHONY: ta
 ta:
@@ -48,6 +66,10 @@ ifneq ($(wildcard $(TA_DEV_KIT_DIR)/host_include/conf.mk),)
 clean:
 	$(q)$(MAKE) -C host/xtest O=$(out-dir)/xtest q=$(q) $@
 	$(q)$(MAKE) -C ta O=$(out-dir)/ta q=$(q) $@
+ifeq ($(CFG_IMX_CA_SRK),y)
+	$(q)$(MAKE) -C host/unsigned_hello O=$(out-dir)/unsigned_hello q=$(q) $@
+	$(q)rm -rf $(out-dir)/WrongCA_Key
+endif
 else
 clean:
 	$(q)echo "TA_DEV_KIT_DIR is not correctly defined"
