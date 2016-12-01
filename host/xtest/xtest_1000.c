@@ -1356,10 +1356,5 @@ static void xtest_tee_test_1018(ADBG_Case_t *c __unused)
 		ADBG_EXPECT_NOT(c, TEE_SUCCESS, system("unsigned_hello"));
 	}
 	Do_ADBG_EndSubCase(c, "Fork Not Signed Sample Hello");
-	Do_ADBG_BeginSubCase(c, "Fork Signed Sample Hello With Wrong Key");
-	{
-		ADBG_EXPECT_NOT(c, TEE_SUCCESS, system("WrongCA_Key"));
-	}
-	Do_ADBG_EndSubCase(c, "Fork Signed Sample Hello With Wrong Key");
 }
 #endif
