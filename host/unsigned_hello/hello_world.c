@@ -27,19 +27,18 @@
 
 #include <stdio.h>
 #include <err.h>
-#include <ta_os_test.h>
-
 #include <tee_client_api.h>
 
+#define TA_UUID { 0x8aaaf200, 0x2450, 0x11e4, \
+		{ 0xab, 0xe2, 0x00, 0x02, 0xa5, 0xd5, 0xc5, 0x1b} }
 
 int main(int argc, char *argv[])
 {
 	TEEC_Result res;
 	TEEC_Context ctx;
 	TEEC_Session sess;
-	TEEC_UUID uuid = TA_OS_TEST_UUID;
+	TEEC_UUID uuid = TA_UUID;
 	uint32_t err_origin;
-	uint32_t nLoginData = 0xa;
 	void *pLoginData = NULL;
 	uint32_t connectionMethod = TEEC_LOGIN_PUBLIC;
 
@@ -48,18 +47,7 @@ int main(int argc, char *argv[])
 	if (res != TEEC_SUCCESS)
 		errx(1, "TEEC_InitializeContext failed with code 0x%x", res);
 
-	/*
-	 * Open a session to the "hello world" TA, the TA will print "hello
-	 * world!" in the log when the session is created.
-	 */
-	switch (connectionMethod) {
-	case TEEC_LOGIN_GROUP:
-	case TEEC_LOGIN_GROUP_APPLICATION:
-		pLoginData = (void *)&nLoginData;
-		break;
-	default:
-		break;
-	}
+
 	res = TEEC_OpenSession(&ctx, &sess, &uuid,
 			connectionMethod, pLoginData, NULL, &err_origin);
 	if (res != TEEC_SUCCESS)
@@ -70,5 +58,5 @@ int main(int argc, char *argv[])
 
 	TEEC_FinalizeContext(&ctx);
 
-	return 0;
+	return res;
 }

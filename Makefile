@@ -34,9 +34,6 @@ xtest:
 			     q=$(q) \
 			     O=$(out-dir)/xtest \
 			     $@
-ifeq ($(CFG_IMX_CA_SRK),y)
-	$(TA_DEV_KIT_DIR)/scripts/ca-link.sh $(out-dir)/xtest/$@
-endif
 
 ifeq ($(CFG_IMX_CA_SRK),y)
 .PHONY: unsigned_hello
@@ -46,8 +43,6 @@ unsigned_hello:
 			     q=$(q) \
 			     O=$(out-dir)/unsigned_hello \
 			     $@
-	$(q)mkdir -p $(out-dir)/WrongCA_Key
-	$(q)cp -r host/WrongCA_Key/WrongCA_Key $(out-dir)/WrongCA_Key/WrongCA_Key
 endif
 
 .PHONY: ta
@@ -64,7 +59,6 @@ clean:
 	$(q)$(MAKE) -C ta O=$(out-dir)/ta q=$(q) $@
 ifeq ($(CFG_IMX_CA_SRK),y)
 	$(q)$(MAKE) -C host/unsigned_hello O=$(out-dir)/unsigned_hello q=$(q) $@
-	$(q)rm -rf $(out-dir)/WrongCA_Key
 endif
 else
 clean:
@@ -292,6 +286,10 @@ install:
 	$(echo) '  INSTALL ${DESTDIR}/lib/optee_armtz'
 	$(q)mkdir -p ${DESTDIR}/lib/optee_armtz
 	$(q)find $(out-dir) -name \*.ta -exec cp -a {} ${DESTDIR}/lib/optee_armtz \;
-	$(echo) '  INSTALL ${DESTDIR}/bin'
-	$(q)mkdir -p ${DESTDIR}/bin
-	$(q)cp -a $(out-dir)/xtest/xtest ${DESTDIR}/bin
+	$(echo) '  INSTALL ${DESTDIR}/usr/bin'
+	$(q)mkdir -p ${DESTDIR}/usr/bin
+	$(q)cp -a $(out-dir)/xtest/xtest ${DESTDIR}/usr/bin
+ifeq ($(CFG_IMX_CA_SRK),y)
+	$(q)cp -a $(out-dir)/unsigned_hello/unsigned_hello ${DESTDIR}/usr/bin
+endif
+

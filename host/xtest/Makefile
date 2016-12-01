@@ -144,6 +144,9 @@ all: xtest
 xtest: $(objs)
 	@echo "  LD      $(O)/$@"
 	$(q)@$(CC) -o $(O)/$@ $+ $(LDFLAGS)
+ifeq ($(CFG_IMX_CA_SRK),y)
+	$(TA_DEV_KIT_DIR)/scripts/ca-link.sh $(O)/$@
+endif
 
 $(O)/%.o: $(CURDIR)/%.c
 	$(q)mkdir -p $(O)/adbg/src
