@@ -33,6 +33,9 @@
 #include <failure-ocram-memory-ta.h>
 #include <ta_time.h>
 #include <ta_ocotp.h>
+#ifdef CFG_SNVS_MC
+#include <ta_mc.h>
+#endif
 
 #ifdef CFG_IMX_CA_SRK
 #include <stdlib.h>
@@ -58,6 +61,9 @@ static void xtest_tee_test_1016(ADBG_Case_t *Case_p);
 #endif
 #ifdef CFG_IMX_CA_SRK
 static void xtest_tee_test_1018(ADBG_Case_t *Case_p);
+#endif
+#ifdef CFG_SNVS_MC
+static void xtest_tee_test_1019(ADBG_Case_t *Case_p);
 #endif
 
 ADBG_CASE_DEFINE(XTEST_TEE_1001, xtest_tee_test_1001, "Core self tests");
@@ -88,6 +94,10 @@ ADBG_CASE_DEFINE(XTEST_TEE_1016, xtest_tee_test_1016,
 #ifdef CFG_IMX_CA_SRK
 ADBG_CASE_DEFINE(XTEST_TEE_1018, xtest_tee_test_1018,
 		"Test Case of CA Auth");
+#endif
+#ifdef CFG_SNVS_MC
+ADBG_CASE_DEFINE(XTEST_TEE_1019, xtest_tee_test_1019,
+		"Test Extension of MC API features");
 #endif
 
 struct xtest_crypto_session {
@@ -1356,5 +1366,91 @@ static void xtest_tee_test_1018(ADBG_Case_t *c __unused)
 		ADBG_EXPECT_NOT(c, TEE_SUCCESS, system("unsigned_hello"));
 	}
 	Do_ADBG_EndSubCase(c, "Fork Not Signed Sample Hello");
+}
+#endif
+
+#ifdef CFG_SNVS_MC
+static uint64_t merge_counter(uint32_t lsb, uint32_t msb)
+{
+	uint64_t result;
+
+	result = msb;
+	result = (result << 32) | lsb;
+	return result;
+}
+
+static int call_tee_snvs_mc(TEEC_Session sess)
+{
+	TEEC_Result res;
+	TEEC_Operation op = TEEC_OPERATION_INITIALIZER;
+	uint32_t err_origin;
+	uint64_t result;
+
+	op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_OUTPUT, TEEC_NONE,
+					 TEEC_NONE, TEEC_NONE);
+
+		res = TEEC_InvokeCommand(&sess, TA_CMD_GET_MC_PROPERTY, &op,
+					 &err_origin);
+
+		if (res != TEEC_SUCCESS)
+			goto EXIT;
+
+
+		if(op.params[0].value.a) {
+			op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_OUTPUT, TEEC_NONE,
+					TEEC_NONE, TEEC_NONE);
+
+			res = TEEC_InvokeCommand(&sess, TA_CMD_GET_MC_VAL, &op,
+					&err_origin);
+
+			if (res != TEEC_SUCCESS)
+				goto EXIT;
+
+			result = merge_counter(op.params[0].value.a,op.params[0].value.b);
+			printf("\nCurrent MC: %lld",result);
+
+			op.paramTypes = TEEC_PARAM_TYPES(TEEC_NONE, TEEC_NONE,
+					TEEC_NONE, TEEC_NONE);
+
+			res = TEEC_InvokeCommand(&sess, TA_CMD_INCREMENT_MC_VAL, &op,
+					&err_origin);
+
+			if (res != TEEC_SUCCESS)
+				goto EXIT;
+
+
+			op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_OUTPUT, TEEC_NONE,
+					TEEC_NONE, TEEC_NONE);
+
+			res = TEEC_InvokeCommand(&sess, TA_CMD_GET_MC_VAL, &op,
+					&err_origin);
+
+			if (res != TEEC_SUCCESS)
+				goto EXIT;
+			result = merge_counter(op.params[0].value.a,op.params[0].value.b);
+			printf("\nMC after increment: %lld\n",result);
+		}
+		else
+			printf("\nThe Monotonic Counter is not configured\n");
+
+
+EXIT:
+	return res;
+}
+
+static void xtest_tee_test_1019(ADBG_Case_t *c)
+{
+	TEEC_Session session = { 0 };
+	uint32_t ret_orig;
+
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c,
+		xtest_teec_open_session(&session, &snvs_mc_test_ta_uuid, NULL,
+					&ret_orig)))
+		return;
+
+	if (!ADBG_EXPECT_TEEC_SUCCESS(c, call_tee_snvs_mc(session)))
+		goto EXIT;
+EXIT:
+	TEEC_CloseSession(&session);
 }
 #endif

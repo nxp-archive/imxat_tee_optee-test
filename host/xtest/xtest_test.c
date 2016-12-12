@@ -31,6 +31,9 @@
 #include <tee_api_types.h>
 #include <TTA_DS_protocol.h>
 #endif
+#ifdef CFG_SNVS_MC
+#include <ta_mc.h>
+#endif
 
 ADBG_ENUM_TABLE_DEFINE_BEGIN(TEEC_Result)
 ADBG_ENUM_TABLE_ENTRY(TEEC_SUCCESS),
@@ -80,7 +83,9 @@ ADBG_ENUM_TABLE_DEFINE_END(TEEC_ErrorOrigin);
 		{ 0xd96a5b40, 0xc3e5, 0x21e3, \
 		{ 0x87, 0x94, 0x10, 0x02, 0xa5, 0xd5, 0xc6, 0x1b } }
 
-
+#ifdef CFG_SNVS_MC
+const TEEC_UUID snvs_mc_test_ta_uuid = TA_MC_UUID;
+#endif
 const TEEC_UUID crypt_user_ta_uuid = TA_CRYPT_UUID;
 const TEEC_UUID os_test_ta_uuid = TA_OS_TEST_UUID;
 const TEEC_UUID create_fail_test_ta_uuid = TA_CREATE_FAIL_TEST_UUID;

@@ -38,6 +38,9 @@ ADBG_CASE_DECLARE(XTEST_TEE_1016);
 #ifdef CFG_IMX_CA_SRK
 ADBG_CASE_DECLARE(XTEST_TEE_1018);
 #endif
+#ifdef CFG_SNVS_MC
+ADBG_CASE_DECLARE(XTEST_TEE_1019);
+#endif
 ADBG_CASE_DECLARE(XTEST_TEE_2001);
 ADBG_CASE_DECLARE(XTEST_TEE_2002);
 
@@ -214,6 +217,7 @@ extern const unsigned int gp_tta_tcf_singleinstance_ta_size;
 extern const char gp_tta_tcf_multipleinstance_ta[];
 extern const unsigned int gp_tta_tcf_multipleinstance_ta_size;
 
+extern const TEEC_UUID snvs_mc_test_ta_uuid;
 extern const TEEC_UUID crypt_user_ta_uuid;
 extern const TEEC_UUID os_test_ta_uuid;
 extern const TEEC_UUID create_fail_test_ta_uuid;
