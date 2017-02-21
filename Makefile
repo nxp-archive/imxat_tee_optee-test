@@ -289,11 +289,11 @@ endif
 install:
 	$(echo) '  INSTALL ${DESTDIR}/lib/optee_armtz'
 	$(q)mkdir -p ${DESTDIR}/lib/optee_armtz
-	$(q)find $(out-dir) -name \*.ta -exec cp -a {} ${DESTDIR}/lib/optee_armtz \;
+	$(q)find $(out-dir) -name \*.ta -exec cp -r {} ${DESTDIR}/lib/optee_armtz \;
 	$(echo) '  INSTALL ${DESTDIR}/usr/bin'
 	$(q)mkdir -p ${DESTDIR}/usr/bin
-	$(q)cp -a $(out-dir)/xtest/xtest ${DESTDIR}/usr/bin
+	$(q)cp -r $(out-dir)/xtest/xtest ${DESTDIR}/usr/bin
 ifeq ($(CFG_IMX_CA_SRK),y)
-	$(q)cp -a $(out-dir)/unsigned_hello/unsigned_hello ${DESTDIR}/usr/bin
+	$(q)cp -r $(out-dir)/unsigned_hello/unsigned_hello ${DESTDIR}/usr/bin
 endif
 
